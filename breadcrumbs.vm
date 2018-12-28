@@ -1,0 +1,51 @@
+#set ( $breadcrumbs = [] )
+#load_breadcrumbs($currentPage)
+#set ( $breadcrumbs = $_ListTool.reverse($breadcrumbs) )
+
+## you could remove the first element (Home link)
+## by doing 
+#set ( $first_item = $breadcrumbs.remove(0) )
+
+<ul>
+    #foreach($item in $breadcrumbs)
+        <li>
+            #if($item.href != "#")
+                <a href="$item.href">$item.text</a>
+            #else 
+                $item.text
+            #end
+        </li>
+    #end
+</ul>
+
+#macro ( load_breadcrumbs $asset ) 
+    ## check for current page then folders
+    #if($asset.assetType == "page")
+        ## if the current page is index, then set the href to "#"
+        #if($asset.name == "index") 
+            #set ( $href = "#" ) 
+        #else
+            #set ( $href = $asset.path )  
+        #end
+    #elseif($asset.assetType == "folder")
+        ## check for root folder 
+        #if($asset.path == "/" )
+             #set ( $href = $asset.path + "index" ) 
+        #else
+             #set ( $href = "/" + $asset.path + "/index" ) 
+        #end
+    #end
+    
+    #set ( $void = $breadcrumbs.add({
+            "href" : $href,
+            "text" : $asset.label
+    }) )     
+
+    ## reset the href
+    #set ( $href = "" )
+    
+    ## continue if the asset has a parent folder
+    #if($asset.parentFolder)
+        #load_breadcrumbs($asset.parentFolder)
+    #end
+#end
